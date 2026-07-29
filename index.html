@@ -6,10 +6,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
     />
-    <title>Kanthié · Prueba tus joyas con Realidad Aumentada</title>
+    <title>Kanthié · Probate tus joyas en Realidad Aumentada</title>
     <meta
       name="description"
-      content="Probate anillos de Kanthié con realidad aumentada: elegí modelo, material, forma y color de la piedra, y vé cómo te quedan en tu propia mano."
+      content="Probate anillos de Kanthié con realidad aumentada: elegí modelo, material y piedra, y vé cómo te quedan en tu propia mano."
+    />
+
+    <!-- Tipografías: serif editorial + sans limpia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
     />
 
     <!-- Vista previa 3D -->
@@ -31,19 +39,66 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- ============================ HEADER ============================ -->
-    <header class="site-header">
-      <div class="brand">
-        <span class="brand-mark">K</span>
-        <span class="brand-name">KANTHIÉ</span>
-      </div>
-      <p class="tagline">Probate nuestras joyas en realidad aumentada</p>
+    <!-- ============================ TOPBAR ============================ -->
+    <header class="topbar">
+      <span class="brand">KANTHIÉ</span>
+      <span class="topbar-tag">Prueba virtual</span>
     </header>
+
+    <!-- ============================= HERO ============================= -->
+    <section class="hero">
+      <p class="eyebrow">Realidad aumentada</p>
+      <h1 class="hero-title">
+        Probate tus joyas,<br /><em>en tu propia mano.</em>
+      </h1>
+      <p class="hero-lead">
+        Elegí el modelo, el material y la piedra. Después, con la cámara de tu
+        celular, vé cómo te queda en el dedo — en tiempo real.
+      </p>
+    </section>
 
     <!-- ============================ WIDGET ============================ -->
     <main class="widget">
+      <!-- Configurador -->
+      <section class="config-pane">
+        <div class="field">
+          <p class="field-title">01 — Modelo</p>
+          <div id="product-list" class="product-list"></div>
+        </div>
+
+        <hr class="rule" />
+
+        <div class="field">
+          <p class="field-title">02 — Material</p>
+          <div id="material-swatches" class="swatches"></div>
+        </div>
+
+        <div class="field">
+          <p class="field-title">03 — Piedra</p>
+          <div id="stone-swatches" class="swatches"></div>
+        </div>
+
+        <hr class="rule" />
+
+        <div class="field field-inline">
+          <div>
+            <p class="field-title">04 — Dedo</p>
+            <div id="finger-buttons" class="chips"></div>
+          </div>
+          <div>
+            <p class="field-title">05 — Posición</p>
+            <div id="placement-buttons" class="chips"></div>
+          </div>
+        </div>
+
+        <button id="try-btn" class="btn-primary">Probar en mi mano</button>
+        <p class="try-note">
+          Requiere permiso de cámara. En celulares funciona sobre HTTPS.
+        </p>
+      </section>
+
       <!-- Vista previa -->
-      <section class="preview-pane">
+      <aside class="preview-pane">
         <model-viewer
           id="preview"
           alt="Vista previa 3D del anillo"
@@ -51,57 +106,21 @@
           auto-rotate
           auto-rotate-delay="0"
           rotation-per-second="18deg"
-          shadow-intensity="1"
-          exposure="1.05"
+          shadow-intensity="0.6"
+          exposure="1.1"
           environment-image="neutral"
           camera-orbit="0deg 75deg 105%"
           interaction-prompt="none"
         >
           <div class="mv-progress" slot="progress-bar"></div>
         </model-viewer>
-        <div id="variant-label" class="variant-label"></div>
-      </section>
-
-      <!-- Configurador -->
-      <section class="config-pane">
-        <div class="field">
-          <h2 class="field-title">Modelo</h2>
-          <div id="product-list" class="product-list"></div>
-        </div>
-
-        <div class="field">
-          <h2 class="field-title">Material</h2>
-          <div id="material-swatches" class="swatches"></div>
-        </div>
-
-        <div class="field">
-          <h2 class="field-title">Piedra</h2>
-          <div id="stone-swatches" class="swatches"></div>
-        </div>
-
-        <div class="field field-inline">
-          <div>
-            <h2 class="field-title">Dedo</h2>
-            <div id="finger-buttons" class="chips"></div>
-          </div>
-          <div>
-            <h2 class="field-title">Posición</h2>
-            <div id="placement-buttons" class="chips"></div>
-          </div>
-        </div>
-
-        <button id="try-btn" class="try-btn">
-          <span class="try-icon" aria-hidden="true">✦</span>
-          Probar en mi mano
-        </button>
-        <p class="try-note">
-          Requiere permiso de cámara. En celulares funciona sobre HTTPS.
-        </p>
-      </section>
+        <p id="variant-label" class="variant-label"></p>
+      </aside>
     </main>
 
     <footer class="site-footer">
-      <span>© <span id="year"></span> Kanthié · Realidad Aumentada</span>
+      <span>Kanthié</span>
+      <span>© <span id="year"></span> · Realidad Aumentada</span>
     </footer>
 
     <!-- ========================= AR OVERLAY ========================= -->
@@ -111,14 +130,14 @@
 
       <div class="ar-topbar">
         <button id="ar-close" class="ar-btn" aria-label="Cerrar">✕</button>
-        <div class="ar-title">Prueba en la mano</div>
+        <span class="ar-title">Prueba en la mano</span>
         <button id="ar-flip" class="ar-btn" aria-label="Cambiar cámara">⟲</button>
       </div>
 
       <div id="ar-status" class="ar-status hidden"></div>
 
       <div id="ar-hint" class="ar-hint hidden">
-        Mostrá tu mano abierta frente a la cámara ✋
+        Mostrá tu mano abierta frente a la cámara
       </div>
     </div>
 
