@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kanthié AR Widget</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Kanthié Jewelry</h1>
+
+    <div id="kanthie-ar-widget">
+      <select id="ring-model">
+        <option value="Anillo_Cuadrado2">Modelo Cuadrado</option>
+        <option value="rosa">Modelo Rosa</option>
+      </select>
+
+      <select id="material">
+        <option value="bronce">Bronce</option>
+        <option value="plata">Plata</option>
+        <option value="alpaca">Alpaca</option>
+      </select>
+
+      <select id="zirconia-shape">
+        <option value="cuadrada">Cuadrada</option>
+        <option value="redonda">Redonda</option>
+        <option value="ovalada">Ovalada</option>
+        <option value="gota">Gota</option>
+      </select>
+
+      <select id="zirconia-color">
+        <option value="blanca">Blanca</option>
+        <option value="bordo">Bordó</option>
+        <option value="verde">Verde</option>
+        <option value="celeste">Celeste</option>
+      </select>
+
+      <button onclick="initAR()">Probar anillo</button>
+    </div>
+
+    <model-viewer
+      id="ring-viewer"
+      src="https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/Anillo_Cuadrado2.glb?v=1748626126474"
+      alt="Modelo de anillo"
+      ar
+      auto-rotate
+      camera-controls
+      background-color="#fff"
+    >
+    </model-viewer>
+
+    <script>
+      function initAR() {
+        const model = document.getElementById("ring-model").value;
+
+        const modelMap = {
+          Anillo_Cuadrado2: "https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/Anillo_Cuadrado2.glb?v=1748626126474",
+          rosa: "https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/rosa.glb?v=1748626138036",
+        };
+
+        const modelUrl = modelMap[model] || modelMap["Anillo_Cuadrado2"];
+        document.getElementById("ring-viewer").setAttribute("src", modelUrl);
+      }
+    </script>
+  </body>
+</html>
