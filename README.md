@@ -1,48 +1,92 @@
-# Hello website!
+# Kanthié · Realidad Aumentada
 
-This is a basic HTML starter project you can build on however you like. No need to save. While you develop your site, your changes will happen ✨ immediately in the preview window. On the left you'll see the files that make up your site, including HTML, JavaScript, and CSS. You can upload assets like images or audio in `assets`. The rest is up to you and your imagination. 🦄
+Widget web para **probar joyas con realidad aumentada**. El usuario elige el
+modelo de anillo, el material y la forma/color de la piedra, y prueba cómo le
+queda **en su propia mano** usando la cámara del dispositivo (frontal o
+trasera). Pensado para escalar a 100+ productos y, más adelante, a otros
+accesorios (pulseras, collares, aros, gorras, ropa).
 
-_Last updated: 28 Feb 2023_
+## ✨ Cómo funciona
 
-## What's in this project?
+A diferencia del modo AR "sobre un plano" (que ofrece `model-viewer`/WebXR y no
+sabe dónde está la mano), este widget hace **detección de mano en tiempo real**
+y ancla la joya al dedo:
 
-← `README.md`: That's this file, where you can tell people what your cool website does and how you built it.
+1. **Cámara** en vivo vía `getUserMedia`.
+2. **MediaPipe HandLandmarker** detecta 21 puntos de la mano en cada frame.
+3. **Three.js** renderiza el modelo `.glb` posicionado, escalado y orientado
+   sobre el dedo elegido, superpuesto al video.
 
-← `index.html`: This is the main web page for your site. The HTML defines the structure and content of the page using _elements_. You'll see references in the HTML to the JS and CSS files. Try clicking the image in the center of the page!
+El usuario puede elegir **en qué dedo** (pulgar, índice, mayor, anular, meñique)
+y **en qué posición** (anillo normal en la base del dedo, o *midi* en la falange
+media).
 
-← `style.css`: CSS files add styling rules to your content. The CSS applies styles to the elements in your HTML page. The style rules also make the image move when you click it.
+## 🗂️ Estructura del proyecto
 
-← `script.js`: If you're feeling fancy you can add interactivity to your site with JavaScript. The code in the JavaScript file runs when the page loads, and when the visitor clicks the button you can add using the code in the TODO.
+| Archivo        | Rol |
+|----------------|-----|
+| `index.html`   | Estructura de la UI y la vista de AR. |
+| `style.css`    | Estética "de lujo" (negro + dorado), responsive para desktop/tablet/celular. |
+| `catalog.js`   | **Catálogo data-driven.** Acá se agregan/editan productos y variantes. |
+| `app.js`       | Arma la UI desde el catálogo, la vista previa 3D y abre la experiencia AR. |
+| `ar-hand.js`   | Motor de AR: cámara + detección de mano + render 3D anclado al dedo. |
+| `*.glb`        | Modelos 3D de las joyas. |
 
-Open each file and check out the comments (in gray) for more info.
+## ➕ Agregar productos (escala a 100+)
 
-## Try this next 🏗️
+Todo el catálogo es data-driven: para sumar un producto sólo se edita
+`catalog.js`. La lógica del widget y del AR **no se toca**.
 
-Take a look in `TODO.md` for next steps you can try out in your new site!
-
-**_Want a minimal version of this project to build your own website? Check out [Blank Website](https://glitch.com/edit/#!/remix/glitch-blank-website)!_**
-
-## Ready to share your site?
-
-Add these meta tags for SEO and social sharing between your page `<head></head>` tags, changing the values for your site:
-
+```js
+{
+  id: "mi-anillo",
+  name: "Mi Anillo",
+  type: "ring",
+  description: "Descripción corta.",
+  // Calibración de AR por-modelo (se afina una vez con cámara real):
+  ar: { scale: 1, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "y" },
+  variants: {
+    "oro__esmeralda":   { src: "mi_anillo_oro_esmeralda.glb" },
+    "plata__ruby":      { src: "mi_anillo_plata_ruby.glb" },
+    // ...clave: `${material}__${piedra}`
+  },
+}
 ```
-<link rel="canonical" href="https://glitch-hello-website.glitch.me/" />
-<meta name="description" content="A simple website, built with Glitch. Remix it to get your own."/>
-<meta name="robots" content="index,follow" />
-<meta property="og:title" content="Hello World!" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://glitch-hello-website.glitch.me/" />
-<meta property="og:description" content="A simple website, built with Glitch. Remix it to get your own."/>
-<meta property="og:image" content="https://cdn.glitch.com/605e2a51-d45f-4d87-a285-9410ad350515%2Fhello-website-social.png?v=1616712748147"/>
-<meta name="twitter:card" content="summary" />
+
+Los `.glb` pueden ser locales (como ahora) o URLs de un CDN.
+
+### Calibrar un modelo en AR
+
+Cada `.glb` puede venir exportado con distinta escala/orientación. El bloque
+`ar` permite ajustarlo sin editar el modelo:
+
+- `holeAxis` — eje del modelo que atraviesa el agujero del anillo (`'x'|'y'|'z'`).
+- `scale` — multiplicador de tamaño (1 = ajuste automático al ancho del dedo).
+- `rotation` — `[x, y, z]` en grados, corrección de orientación.
+- `offset` — `[x, y, z]` desplazamiento fino (en unidades de ancho de dedo).
+
+## 📱 Requisitos y despliegue
+
+- La cámara **requiere HTTPS** (o `localhost`). GitHub Pages sirve por HTTPS,
+  así que funciona publicando el repo como Página.
+- Compatible con **desktop, tablets y celulares** (iOS Safari y Android Chrome).
+- Necesita conexión para cargar las librerías desde CDN (Three.js, MediaPipe,
+  model-viewer). Los modelos `.glb` se sirven desde el propio repositorio.
+
+## 🧪 Probar localmente
+
+Al usar cámara, no alcanza con abrir el archivo: hay que servirlo por HTTP(S).
+
+```bash
+# desde la carpeta del proyecto
+python3 -m http.server 8000
+# luego abrir http://localhost:8000
 ```
 
-![Glitch](https://cdn.glitch.com/a9975ea6-8949-4bab-addb-8a95021dc2da%2FLogo_Color.svg?v=1602781328576)
+## 🛣️ Roadmap
 
-## You built this with Glitch!
-
-[Glitch](https://glitch.com) is a friendly community where millions of people come together to build web apps and websites.
-
-- Need more help? [Check out our Help Center](https://help.glitch.com/) for answers to any common questions.
-- Ready to make it official? [Become a paid Glitch member](https://glitch.com/pricing) to boost your app with private sharing, more storage and memory, domains and more.
+- [ ] Selección de mano (izquierda/derecha) y de anillos múltiples a la vez.
+- [ ] Extender a otros accesorios con el mismo motor (pose de cuerpo/cara):
+      pulseras, collares, aros, gorras y ropa.
+- [ ] Captura de foto/registro para compartir el resultado.
+- [ ] Panel de calibración visual por-modelo.

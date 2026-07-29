@@ -2,65 +2,129 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Kanthié AR Widget</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <title>Kanthié · Prueba tus joyas con Realidad Aumentada</title>
+    <meta
+      name="description"
+      content="Probate anillos de Kanthié con realidad aumentada: elegí modelo, material, forma y color de la piedra, y vé cómo te quedan en tu propia mano."
+    />
+
+    <!-- Vista previa 3D -->
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"
+    ></script>
+
+    <!-- Three.js para el motor de AR (import map) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Kanthié Jewelry</h1>
+    <!-- ============================ HEADER ============================ -->
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark">K</span>
+        <span class="brand-name">KANTHIÉ</span>
+      </div>
+      <p class="tagline">Probate nuestras joyas en realidad aumentada</p>
+    </header>
 
-    <div id="kanthie-ar-widget">
-      <select id="ring-model">
-        <option value="Anillo_Cuadrado2">Modelo Cuadrado</option>
-        <option value="rosa">Modelo Rosa</option>
-      </select>
+    <!-- ============================ WIDGET ============================ -->
+    <main class="widget">
+      <!-- Vista previa -->
+      <section class="preview-pane">
+        <model-viewer
+          id="preview"
+          alt="Vista previa 3D del anillo"
+          camera-controls
+          auto-rotate
+          auto-rotate-delay="0"
+          rotation-per-second="18deg"
+          shadow-intensity="1"
+          exposure="1.05"
+          environment-image="neutral"
+          camera-orbit="0deg 75deg 105%"
+          interaction-prompt="none"
+        >
+          <div class="mv-progress" slot="progress-bar"></div>
+        </model-viewer>
+        <div id="variant-label" class="variant-label"></div>
+      </section>
 
-      <select id="material">
-        <option value="bronce">Bronce</option>
-        <option value="plata">Plata</option>
-        <option value="alpaca">Alpaca</option>
-      </select>
+      <!-- Configurador -->
+      <section class="config-pane">
+        <div class="field">
+          <h2 class="field-title">Modelo</h2>
+          <div id="product-list" class="product-list"></div>
+        </div>
 
-      <select id="zirconia-shape">
-        <option value="cuadrada">Cuadrada</option>
-        <option value="redonda">Redonda</option>
-        <option value="ovalada">Ovalada</option>
-        <option value="gota">Gota</option>
-      </select>
+        <div class="field">
+          <h2 class="field-title">Material</h2>
+          <div id="material-swatches" class="swatches"></div>
+        </div>
 
-      <select id="zirconia-color">
-        <option value="blanca">Blanca</option>
-        <option value="bordo">Bordó</option>
-        <option value="verde">Verde</option>
-        <option value="celeste">Celeste</option>
-      </select>
+        <div class="field">
+          <h2 class="field-title">Piedra</h2>
+          <div id="stone-swatches" class="swatches"></div>
+        </div>
 
-      <button onclick="initAR()">Probar anillo</button>
+        <div class="field field-inline">
+          <div>
+            <h2 class="field-title">Dedo</h2>
+            <div id="finger-buttons" class="chips"></div>
+          </div>
+          <div>
+            <h2 class="field-title">Posición</h2>
+            <div id="placement-buttons" class="chips"></div>
+          </div>
+        </div>
+
+        <button id="try-btn" class="try-btn">
+          <span class="try-icon" aria-hidden="true">✦</span>
+          Probar en mi mano
+        </button>
+        <p class="try-note">
+          Requiere permiso de cámara. En celulares funciona sobre HTTPS.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>© <span id="year"></span> Kanthié · Realidad Aumentada</span>
+    </footer>
+
+    <!-- ========================= AR OVERLAY ========================= -->
+    <div id="ar-overlay" class="ar-overlay" aria-hidden="true">
+      <video id="ar-video" class="ar-video" playsinline muted autoplay></video>
+      <canvas id="ar-canvas" class="ar-canvas"></canvas>
+
+      <div class="ar-topbar">
+        <button id="ar-close" class="ar-btn" aria-label="Cerrar">✕</button>
+        <div class="ar-title">Prueba en la mano</div>
+        <button id="ar-flip" class="ar-btn" aria-label="Cambiar cámara">⟲</button>
+      </div>
+
+      <div id="ar-status" class="ar-status hidden"></div>
+
+      <div id="ar-hint" class="ar-hint hidden">
+        Mostrá tu mano abierta frente a la cámara ✋
+      </div>
     </div>
 
-    <model-viewer
-      id="ring-viewer"
-      src="https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/Anillo_Cuadrado2.glb?v=1748626126474"
-      alt="Modelo de anillo"
-      ar
-      auto-rotate
-      camera-controls
-      background-color="#fff"
-    >
-    </model-viewer>
-
+    <script type="module" src="./app.js"></script>
     <script>
-      function initAR() {
-        const model = document.getElementById("ring-model").value;
-
-        const modelMap = {
-          Anillo_Cuadrado2: "https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/Anillo_Cuadrado2.glb?v=1748626126474",
-          rosa: "https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/rosa.glb?v=1748626138036",
-        };
-
-        const modelUrl = modelMap[model] || modelMap["Anillo_Cuadrado2"];
-        document.getElementById("ring-viewer").setAttribute("src", modelUrl);
-      }
+      document.getElementById("year").textContent = new Date().getFullYear();
     </script>
   </body>
 </html>
