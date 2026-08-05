@@ -1,0 +1,51 @@
+/* ============================================================
+   Don Satur · Tokens de marca
+   ------------------------------------------------------------
+   ESTE ES EL ÚNICO ARCHIVO QUE HAY QUE TOCAR cuando llegue el
+   manual de marca oficial. Todo el sitio lee de acá.
+   ============================================================ */
+
+:root {
+  /* --- Paleta (tomada del packaging del pan dulce sin frutas) --- */
+  --ds-red:          #C8102E;  /* rojo principal de la bolsa      */
+  --ds-red-dark:     #8C0E20;  /* sombra del degradé              */
+  --ds-red-light:    #E23744;  /* brillo / hover                  */
+  --ds-crust:        #B9762E;  /* corteza del pan                 */
+  --ds-crust-dark:   #8A5219;
+  --ds-crumb:        #F5DFA8;  /* miga                            */
+  --ds-cream:        #FBF1DC;  /* fondo cálido                    */
+  --ds-paper:        #FFFDF7;  /* superficies                     */
+  --ds-ink:          #1A1614;  /* texto                           */
+  --ds-ink-soft:     #6B5F55;
+  --ds-seal:         #101010;  /* octágonos "EXCESO EN…"          */
+  --ds-line:         #E4D5B7;
+
+  /* --- Tipografía --- */
+  /* El wordmark de Don Satur es una serif condensada en mayúsculas.
+     Hasta tener la fuente oficial usamos stacks del sistema.        */
+  --ds-font-display: "Bookman Old Style", "Playfair Display", Georgia,
+                     "Times New Roman", serif;
+  --ds-font-ui:      "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+
+  --ds-track-display: 0.02em;
+  --ds-track-caps:    0.14em;
+
+  /* --- Formas --- */
+  --ds-radius:    14px;
+  --ds-radius-sm: 9px;
+  --ds-radius-lg: 22px;
+
+  /* --- Sombras --- */
+  --ds-shadow-sm: 0 2px 6px rgba(26, 22, 20, .12);
+  --ds-shadow:    0 8px 24px rgba(26, 22, 20, .16);
+  --ds-shadow-lg: 0 20px 50px rgba(26, 22, 20, .28);
+
+  /* --- Layout --- */
+  --ds-header-h:  64px;
+  --ds-sidebar-w: 340px;
+}
+
+/* Degradé del packaging: rojo intenso arriba, más oscuro abajo. */
+.ds-gradient-red {
+  background: linear-gradient(168deg, var(--ds-red-light) 0%, var(--ds-red) 42%, var(--ds-red-dark) 100%);
+}
