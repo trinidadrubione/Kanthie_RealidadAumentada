@@ -1,19 +1,18 @@
-# TODO 🚧
+# TODO / Roadmap 🚧
 
-Your new site is all yours so it doesn't matter if you break it! Try editing the code–add a button element that moves when the user clicks it.
+## Hecho ✅
+- [x] Detección de mano en tiempo real (MediaPipe HandLandmarker).
+- [x] Anclaje del anillo al dedo (no más "plano genérico").
+- [x] Selección de dedo (pulgar → meñique) y posición (anillo / midi).
+- [x] Cámara frontal y trasera con cambio en vivo.
+- [x] Catálogo data-driven para escalar a 100+ productos.
+- [x] UI "de lujo" responsive (desktop / tablet / celular).
 
-In `index.html`, add this code on the line after the comment with `ADD BUTTON HERE` in it (you can copy and paste the button element HTML):
-
-```html
-<button>
-    Click me!
-</button>
-```
-
-Look at the page to see the button. Click it!
-
-Open `script.js` to see the script that makes the button move.
-
-## Keep going! 🚀
-
-Try adding more properties to the CSS `dipped` style for the button to see how the changes appear on click.
+## Próximo 🎯
+- [ ] Afinar la calibración `ar` de cada `.glb` con una cámara real
+      (`scale`, `rotation`, `offset`, `holeAxis` en `catalog.js`).
+- [ ] Elegir mano izquierda/derecha y permitir varios anillos simultáneos.
+- [ ] Botón de captura de foto para compartir el resultado.
+- [ ] Extender el motor a otros accesorios (pulseras, collares, aros, gorras,
+      ropa) usando detección de pose de cuerpo/cara.
+- [ ] Cargar el catálogo desde un backend/CMS en lugar de `catalog.js`.

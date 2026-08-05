@@ -2,65 +2,148 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Kanthié AR Widget</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <title>Kanthié · Probate tus joyas en Realidad Aumentada</title>
+    <meta
+      name="description"
+      content="Probate anillos de Kanthié con realidad aumentada: elegí modelo, material y piedra, y vé cómo te quedan en tu propia mano."
+    />
+
+    <!-- Tipografías: serif editorial + sans limpia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Vista previa 3D -->
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"
+    ></script>
+
+    <!-- Three.js para el motor de AR (import map) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Kanthié Jewelry</h1>
+    <!-- ============================ TOPBAR ============================ -->
+    <header class="topbar">
+      <span class="brand">KANTHIÉ</span>
+      <span class="topbar-tag">Prueba virtual</span>
+    </header>
 
-    <div id="kanthie-ar-widget">
-      <select id="ring-model">
-        <option value="Anillo_Cuadrado2">Modelo Cuadrado</option>
-        <option value="rosa">Modelo Rosa</option>
-      </select>
+    <!-- ============================= HERO ============================= -->
+    <section class="hero">
+      <p class="eyebrow">Realidad aumentada</p>
+      <h1 class="hero-title">
+        Probate tus joyas,<br /><em>en tu propia mano.</em>
+      </h1>
+      <p class="hero-lead">
+        Elegí el modelo, el material y la piedra. Después, con la cámara de tu
+        celular, vé cómo te queda en el dedo — en tiempo real.
+      </p>
+    </section>
 
-      <select id="material">
-        <option value="bronce">Bronce</option>
-        <option value="plata">Plata</option>
-        <option value="alpaca">Alpaca</option>
-      </select>
+    <!-- ============================ WIDGET ============================ -->
+    <main class="widget">
+      <!-- Configurador -->
+      <section class="config-pane">
+        <div class="field">
+          <p class="field-title">01 — Modelo</p>
+          <div id="product-list" class="product-list"></div>
+        </div>
 
-      <select id="zirconia-shape">
-        <option value="cuadrada">Cuadrada</option>
-        <option value="redonda">Redonda</option>
-        <option value="ovalada">Ovalada</option>
-        <option value="gota">Gota</option>
-      </select>
+        <hr class="rule" />
 
-      <select id="zirconia-color">
-        <option value="blanca">Blanca</option>
-        <option value="bordo">Bordó</option>
-        <option value="verde">Verde</option>
-        <option value="celeste">Celeste</option>
-      </select>
+        <div class="field">
+          <p class="field-title">02 — Material</p>
+          <div id="material-swatches" class="swatches"></div>
+        </div>
 
-      <button onclick="initAR()">Probar anillo</button>
+        <div class="field">
+          <p class="field-title">03 — Piedra</p>
+          <div id="stone-swatches" class="swatches"></div>
+        </div>
+
+        <hr class="rule" />
+
+        <div class="field field-inline">
+          <div>
+            <p class="field-title">04 — Dedo</p>
+            <div id="finger-buttons" class="chips"></div>
+          </div>
+          <div>
+            <p class="field-title">05 — Posición</p>
+            <div id="placement-buttons" class="chips"></div>
+          </div>
+        </div>
+
+        <button id="try-btn" class="btn-primary">Probar en mi mano</button>
+        <p class="try-note">
+          Requiere permiso de cámara. En celulares funciona sobre HTTPS.
+        </p>
+      </section>
+
+      <!-- Vista previa -->
+      <aside class="preview-pane">
+        <model-viewer
+          id="preview"
+          alt="Vista previa 3D del anillo"
+          camera-controls
+          auto-rotate
+          auto-rotate-delay="0"
+          rotation-per-second="18deg"
+          shadow-intensity="0.6"
+          exposure="1.1"
+          environment-image="neutral"
+          camera-orbit="0deg 75deg 105%"
+          interaction-prompt="none"
+        >
+          <div class="mv-progress" slot="progress-bar"></div>
+        </model-viewer>
+        <p id="variant-label" class="variant-label"></p>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <span>Kanthié</span>
+      <span>© <span id="year"></span> · Realidad Aumentada</span>
+    </footer>
+
+    <!-- ========================= AR OVERLAY ========================= -->
+    <div id="ar-overlay" class="ar-overlay" aria-hidden="true">
+      <video id="ar-video" class="ar-video" playsinline muted autoplay></video>
+      <canvas id="ar-canvas" class="ar-canvas"></canvas>
+
+      <div class="ar-topbar">
+        <button id="ar-close" class="ar-btn" aria-label="Cerrar">✕</button>
+        <span class="ar-title">Prueba en la mano</span>
+        <button id="ar-flip" class="ar-btn" aria-label="Cambiar cámara">⟲</button>
+      </div>
+
+      <div id="ar-status" class="ar-status hidden"></div>
+
+      <div id="ar-hint" class="ar-hint hidden">
+        Mostrá tu mano abierta frente a la cámara
+      </div>
     </div>
 
-    <model-viewer
-      id="ring-viewer"
-      src="https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/Anillo_Cuadrado2.glb?v=1748626126474"
-      alt="Modelo de anillo"
-      ar
-      auto-rotate
-      camera-controls
-      background-color="#fff"
-    >
-    </model-viewer>
-
+    <script type="module" src="./app.js"></script>
     <script>
-      function initAR() {
-        const model = document.getElementById("ring-model").value;
-
-        const modelMap = {
-          Anillo_Cuadrado2: "https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/Anillo_Cuadrado2.glb?v=1748626126474",
-          rosa: "https://cdn.glitch.global/1ced597e-19c6-4769-afc2-be2e23532202/rosa.glb?v=1748626138036",
-        };
-
-        const modelUrl = modelMap[model] || modelMap["Anillo_Cuadrado2"];
-        document.getElementById("ring-viewer").setAttribute("src", modelUrl);
-      }
+      document.getElementById("year").textContent = new Date().getFullYear();
     </script>
   </body>
 </html>

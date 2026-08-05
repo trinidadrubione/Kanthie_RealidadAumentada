@@ -1,112 +1,466 @@
-/******************************************************************************
-START Glitch hello-app default styles
+/* =============================================================================
+   Kanthié · AR Widget
+   Estética editorial de lujo (inspirada en gingerba.com): fondo hueso cálido,
+   títulos serif (recta + itálica), cuerpo sans limpio, botones negros
+   rectangulares, esquinas rectas, líneas finas y mucho aire.
+   ========================================================================== */
 
-The styles in this section do some minimal CSS resets, set default fonts and 
-colors, and handle the layout for our footer and "Remix on Glitch" button. If
-you're new to CSS they may seem a little complicated, but you can scroll down
-to this section's matching END comment to see page-specific styles.
-******************************************************************************/
-
-
-/* 
-  The style rules specify elements by type and by attributes such as class and ID
-  Each section indicates an element or elements, then lists the style properties to apply
-  See if you can cross-reference the rules in this file with the elements in index.html
-*/
-
-/* Our default values set as CSS variables */
- :root {
-  --color-bg: #fdf6f0; /* Hueso */
-  --color-btn: #f9cce3; /* Rosa bebé */
-  --color-btn-hover: #af4c84;
-  --color-text-main: #000000;
-  --color-text-header: #2800FF;
-  --color-primary: #FFFF00;
-  --wrapper-height: 87vh;
-  --image-max-width: 300px;
-  --image-margin: 3rem;
-  --font-family: "HK Grotesk", "Helvetica Neue", sans-serif;
-  --font-family-header: "HK Grotesk";
+:root {
+  --paper: #f5f4f1;   /* hueso cálido, fondo principal */
+  --panel: #eceae5;   /* panel levemente más oscuro (preview) */
+  --ink: #141311;     /* casi negro: títulos, botones */
+  --ink-soft: #454340;/* cuerpo de texto */
+  --muted: #8c8880;   /* eyebrows, notas, labels */
+  --line: #d8d5ce;    /* hairlines */
+  --serif: "Playfair Display", "Times New Roman", Georgia, serif;
+  --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Reset */
 * {
   box-sizing: border-box;
 }
 [hidden] {
   display: none !important;
 }
-
-@font-face {
-  font-family: HK Grotesk;
-  src: url("https://cdn.glitch.me/605e2a51-d45f-4d87-a285-9410ad350515%2FHKGrotesk-Regular.otf?v=1603136326027") format("opentype");
+.hidden {
+  display: none;
 }
-@font-face {
-  font-family: HK Grotesk;
-  font-weight: bold;
-  src: url("https://cdn.glitch.me/605e2a51-d45f-4d87-a285-9410ad350515%2FHKGrotesk-Bold.otf?v=1603136323437") format("opentype");
+
+html,
+body {
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  font-family: var(--font-family);
-  background: var(--color-bg);
+  font-family: var(--sans);
+  color: var(--ink-soft);
+  background: var(--paper);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+body.ar-active {
+  overflow: hidden;
+}
+
+/* Utilidad de "eyebrow" (rótulo superior en mayúsculas espaciadas) */
+.eyebrow,
+.field-title,
+.topbar-tag {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ------------------------------ Topbar --------------------------------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem clamp(1.25rem, 5vw, 4rem);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  font-family: var(--sans);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+/* ------------------------------- Hero ---------------------------------- */
+.hero {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 7vw, 5rem) clamp(1.25rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+}
+.hero .eyebrow {
+  margin: 0 0 1.1rem;
+}
+.hero-title {
+  font-family: var(--serif);
+  font-weight: 500;
+  color: var(--ink);
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.4rem;
+}
+.hero-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+}
+.hero-lead {
+  max-width: 46ch;
+  font-size: clamp(1rem, 2.4vw, 1.12rem);
+  color: var(--ink-soft);
   margin: 0;
-  padding: 2rem;
+}
+
+/* ------------------------------ Widget --------------------------------- */
+.widget {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem) clamp(3rem, 7vw, 5rem);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 5vw, 4.5rem);
+  align-items: start;
+}
+
+/* --- Configurador --- */
+.config-pane {
   display: flex;
   flex-direction: column;
+  gap: clamp(1.4rem, 3vw, 2rem);
+}
+.field-title {
+  margin: 0 0 1rem;
+}
+.rule {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0.2rem 0;
+}
+
+/* Lista de modelos */
+.product-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line); /* las juntas de 1px hacen de líneas divisorias */
+  border: 1px solid var(--line);
+}
+.product-card {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.1rem 1.15rem;
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+.product-card:hover {
+  background: #efeee9;
+}
+.product-card.active {
+  background: var(--ink);
+}
+.product-card.active .product-name {
+  color: #fff;
+}
+.product-card.active .product-desc {
+  color: #b9b6ae;
+}
+.product-name {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.25rem;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.product-desc {
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* Swatches (material / piedra) */
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.swatch {
+  display: inline-flex;
   align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+.swatch:hover {
+  border-color: #b7b3aa;
+}
+.swatch.active {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.swatch .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+.swatch-label {
+  letter-spacing: 0.01em;
 }
 
-h1 {
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  color: #333;
+/* Chips (dedo / posición): estilo texto editorial */
+.field-inline {
+  display: flex;
+  gap: clamp(1.25rem, 4vw, 2.5rem);
+  flex-wrap: wrap;
+}
+.field-inline > div {
+  flex: 1;
+  min-width: 150px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+}
+.chip {
+  padding: 0.25rem 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-bottom: 1.5px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.chip:hover {
+  color: var(--ink-soft);
+}
+.chip.active {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
 }
 
-#kanthie-ar-widget {
+/* Botón principal (negro, rectangular, mayúsculas espaciadas) */
+.btn-primary {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+  padding: 1.05rem 2.4rem;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s;
+}
+.btn-primary:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.btn-primary:disabled {
+  border-color: var(--line);
+  background: var(--line);
+  color: #a8a49c;
+  cursor: not-allowed;
+}
+.try-note {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* --- Vista previa --- */
+.preview-pane {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: sticky;
+  top: 1.5rem;
+}
+#preview {
   width: 100%;
-  max-width: 400px;
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  aspect-ratio: 4 / 5;
+  min-height: 320px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  --poster-color: transparent;
+}
+.mv-progress {
+  height: 2px;
+  background: var(--ink);
+}
+.variant-label {
+  margin: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--ink);
+  min-height: 1.4em;
 }
 
-select {
-  width: 100%;
-  padding: 0.8rem;
-  border: 2px solid #ddd;
-  border-radius: 12px;
-  font-size: 1rem;
-  appearance: none;
-  background: #f8f8f8;
+/* ------------------------------ Footer --------------------------------- */
+.site-footer {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1.25rem, 5vw, 4rem);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.site-footer span:first-child {
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  color: var(--ink);
 }
 
-button {
-  padding: 1rem;
-  font-size: 1rem;
-  background: var(--color-btn);
-  color: white;
-  border: none;
-  border-radius: 14px;
+/* ============================ AR OVERLAY ============================== */
+.ar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #0a0a0a;
+  display: none;
+}
+.ar-overlay.open {
+  display: block;
+}
+.ar-video,
+.ar-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.ar-video {
+  object-fit: cover;
+}
+.ar-video.mirrored {
+  transform: scaleX(-1);
+}
+.ar-canvas {
+  pointer-events: none;
+}
+
+.ar-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(1rem, env(safe-area-inset-top)) clamp(1rem, 4vw, 1.75rem) 1rem;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent);
+  z-index: 2;
+}
+.ar-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: #fff;
+}
+.ar-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 1.05rem;
   cursor: pointer;
-  transition: background 0.3s ease;
-  font-weight: bold;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s;
+}
+.ar-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.ar-btn:active {
+  transform: scale(0.95);
 }
 
-button:hover {
-  background: var(--color-btn-hover);
+.ar-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: min(86vw, 420px);
+  text-align: center;
+  padding: 1.1rem 1.25rem;
+  background: rgba(10, 10, 10, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f4f2ee;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  z-index: 3;
 }
 
-model-viewer {
-  width: 100%;
-  max-width: 400px;
-  height: 400px;
-  margin-top: 2rem;
-  border-radius: 20px;
-  background: #fafafa;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+.ar-hint {
+  position: absolute;
+  left: 50%;
+  bottom: max(1.75rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 0.7rem 1.2rem;
+  background: rgba(10, 10, 10, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  z-index: 2;
+  transition: opacity 0.3s;
+}
+/* El hint se atenúa con opacidad (no display) para poder animar la aparición. */
+.ar-hint.hidden {
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================ Responsive ============================== */
+@media (max-width: 860px) {
+  .widget {
+    grid-template-columns: 1fr;
+  }
+  /* En pantallas chicas, la vista previa va arriba del configurador */
+  .preview-pane {
+    order: -1;
+    position: static;
+  }
+  #preview {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (max-width: 460px) {
+  .product-list {
+    grid-template-columns: 1fr;
+  }
+  .btn-primary {
+    align-self: stretch;
+    text-align: center;
+  }
+  .hero-title {
+    font-size: clamp(2.2rem, 12vw, 3rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
