@@ -132,13 +132,24 @@ body.ar-active {
 .model-select {
   position: relative;
 }
-.model-thumb {
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
+/* Monograma (inicial del modelo). No usa WebGL: liviano y confiable en móvil. */
+.model-mono {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
   background: var(--panel);
   border: 1px solid var(--line);
-  --poster-color: transparent;
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.model-option[aria-selected="true"] .model-mono {
+  background: #2a2824;
+  border-color: #2a2824;
+  color: #fff;
 }
 .model-trigger {
   width: 100%;
