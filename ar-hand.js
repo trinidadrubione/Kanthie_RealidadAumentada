@@ -380,9 +380,9 @@ export class HandAR {
     // Oclusor de dedo: cilindro alineado al dedo, un poco más fino que el aro,
     // y largo para cubrir la falange. Oculta la parte del anillo que queda por
     // detrás del dedo.
-    // Radio del oclusor: algo menor que el aro para que quede dentro del
-    // agujero del anillo (el dedo llena el aro) y no asome por delante.
-    const rFinger = s.fingerR * 0.72;
+    // Radio del oclusor ≈ radio del dedo (apenas menor para no asomar por el
+    // frente del agujero). Oculta la parte del anillo que queda detrás del dedo.
+    const rFinger = s.fingerR * 0.9;
     this.occluder.position.copy(s.pos);
     this.occluder.quaternion.copy(s.baseQuat);
     this.occluder.scale.set(rFinger, s.fingerR * 5.2, rFinger);
