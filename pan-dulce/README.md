@@ -8,6 +8,11 @@ un pin se abre la **galería de fotos** que subió la gente en ese lugar.
 Inspirado en la mecánica de *heartspotting*: la gracia es la acumulación
 colectiva de hallazgos sobre un mapa.
 
+![El mapa con avistamientos](docs/captura-mapa.png)
+
+🎬 **Video del funcionamiento completo:** [`docs/demo.mp4`](docs/demo.mp4)
+(1:27 — recorre galería, cámara, ubicación y publicación de un avistamiento).
+
 ---
 
 ## ✨ Qué hace hoy
