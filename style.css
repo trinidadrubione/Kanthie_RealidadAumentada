@@ -128,49 +128,121 @@ body.ar-active {
   margin: 0.2rem 0;
 }
 
-/* Lista de modelos */
-.product-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--line); /* las juntas de 1px hacen de líneas divisorias */
-  border: 1px solid var(--line);
+/* Selector de modelo (dropdown con miniatura 3D) */
+.model-select {
+  position: relative;
 }
-.product-card {
+.model-thumb {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  --poster-color: transparent;
+}
+.model-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
   text-align: left;
+  transition: border-color 0.2s;
+}
+.model-trigger:hover {
+  border-color: #b7b3aa;
+}
+.model-select.open .model-trigger {
+  border-color: var(--ink);
+}
+.model-trigger-text {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 1.1rem 1.15rem;
-  background: var(--paper);
-  color: var(--ink-soft);
-  cursor: pointer;
-  border: none;
-  transition: background 0.2s, color 0.2s;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
 }
-.product-card:hover {
-  background: #efeee9;
-}
-.product-card.active {
-  background: var(--ink);
-}
-.product-card.active .product-name {
-  color: #fff;
-}
-.product-card.active .product-desc {
-  color: #b9b6ae;
-}
-.product-name {
+.model-trigger-name {
   font-family: var(--serif);
   font-weight: 500;
-  font-size: 1.25rem;
-  line-height: 1.1;
+  font-size: 1.15rem;
   color: var(--ink);
+  line-height: 1.05;
 }
-.product-desc {
-  font-size: 0.76rem;
+.model-trigger-desc {
+  font-size: 0.72rem;
   color: var(--muted);
-  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-caret {
+  color: var(--muted);
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+}
+.model-select.open .model-caret {
+  transform: rotate(180deg);
+}
+
+.model-panel {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+.model-option {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s;
+}
+.model-option:last-child {
+  border-bottom: none;
+}
+.model-option:hover {
+  background: #efeee9;
+}
+.model-option[aria-selected="true"] {
+  background: var(--ink);
+}
+.model-option[aria-selected="true"] .model-option-name {
+  color: #fff;
+}
+.model-option[aria-selected="true"] .model-option-desc {
+  color: #b9b6ae;
+}
+.model-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.model-option-name {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.1rem;
+  color: var(--ink);
+  line-height: 1.05;
+}
+.model-option-desc {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.3;
 }
 
 /* Swatches (material / piedra) */
@@ -278,6 +350,96 @@ body.ar-active {
   color: var(--muted);
 }
 
+/* Guía de dedos / posición */
+.guide-toggle {
+  align-self: flex-start;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-bottom: 1px solid var(--ink-soft);
+}
+.guide-toggle:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+.guide {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  background: #fbfaf8;
+}
+.guide.hidden {
+  display: none;
+}
+.guide-svg {
+  width: 132px;
+  height: auto;
+  color: var(--ink);
+  flex: 0 0 auto;
+}
+.guide-svg .g-num-bg {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+.guide-svg .g-num {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ink);
+  text-anchor: middle;
+}
+.guide-text {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 200px;
+}
+.guide-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.guide-fingers li {
+  color: var(--ink-soft);
+}
+.guide-fingers b {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  font-size: 0.7rem;
+  margin-right: 0.4rem;
+}
+.guide-legend b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.g-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 0.35rem;
+}
+
 /* --- Vista previa --- */
 .preview-pane {
   display: flex;
@@ -316,6 +478,8 @@ body.ar-active {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem 1.5rem;
+  flex-wrap: wrap;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -324,6 +488,9 @@ body.ar-active {
   font-weight: 600;
   letter-spacing: 0.25em;
   color: var(--ink);
+}
+.footer-credit {
+  letter-spacing: 0.06em;
 }
 
 /* ============================ AR OVERLAY ============================== */
@@ -441,20 +608,43 @@ body.ar-active {
     position: static;
   }
   #preview {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 1 / 1;
   }
 }
 
-@media (max-width: 460px) {
-  .product-list {
-    grid-template-columns: 1fr;
+/* Compactación para celulares: menos alto y menos aire para que entre más
+   contenido sin que se corte. */
+@media (max-width: 560px) {
+  .hero {
+    padding-top: clamp(1.5rem, 6vw, 2.5rem);
+    padding-bottom: 1rem;
+  }
+  .hero-title {
+    font-size: clamp(2rem, 11vw, 2.8rem);
+  }
+  .hero-lead {
+    font-size: 0.95rem;
+  }
+  .widget {
+    padding-top: 1rem;
+    gap: 1.25rem;
+  }
+  .config-pane {
+    gap: 1.15rem;
+  }
+  #preview {
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+  }
+  .field-title {
+    margin-bottom: 0.6rem;
   }
   .btn-primary {
     align-self: stretch;
     text-align: center;
   }
-  .hero-title {
-    font-size: clamp(2.2rem, 12vw, 3rem);
+  .variant-label {
+    font-size: 1.1rem;
   }
 }
 

@@ -3,10 +3,13 @@
 ## Hecho ✅
 - [x] Detección de mano en tiempo real (MediaPipe HandLandmarker).
 - [x] Anclaje del anillo al dedo (no más "plano genérico").
+- [x] Oclusor de dedo: el anillo se ve "puesto" (se oculta la parte trasera).
 - [x] Selección de dedo (pulgar → meñique) y posición (anillo / midi).
+- [x] Guía visual de dedos y posiciones (para quien no sabe los nombres).
+- [x] Selector de modelo como menú desplegable con miniatura 3D (vista superior).
 - [x] Cámara frontal y trasera con cambio en vivo.
 - [x] Catálogo data-driven para escalar a 100+ productos.
-- [x] UI "de lujo" responsive (desktop / tablet / celular).
+- [x] UI editorial "de lujo" responsive (desktop / tablet / celular).
 
 ## Próximo 🎯
 - [ ] Afinar la calibración `ar` de cada `.glb` con una cámara real

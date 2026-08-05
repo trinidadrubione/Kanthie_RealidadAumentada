@@ -69,7 +69,14 @@ export class HandAR {
     this.arConfig = { scale: 1, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "y" };
 
     // Estado de suavizado (para evitar tembleque frame a frame).
-    this._smooth = { pos: new THREE.Vector3(), scale: 1, quat: new THREE.Quaternion(), init: false };
+    this._smooth = {
+      pos: new THREE.Vector3(),
+      scale: 1,
+      quat: new THREE.Quaternion(),
+      baseQuat: new THREE.Quaternion(),
+      fingerR: 20,
+      init: false,
+    };
 
     this._initThree();
   }
@@ -102,8 +109,23 @@ export class HandAR {
     rim.position.set(-1, -0.5, 1);
     this.scene.add(rim);
 
+    // Oclusor de dedo: un cilindro invisible que SOLO escribe profundidad (no
+    // color). Al ubicarlo sobre el dedo, "tapa" la mitad trasera del anillo,
+    // logrando que se vea realmente puesto (envolviendo el dedo) y no pegado
+    // como una calcomanía. Se agrega ANTES del anillo para que escriba el
+    // depth-buffer primero.
+    const occMat = new THREE.MeshBasicMaterial({ colorWrite: false });
+    this.occluder = new THREE.Mesh(
+      new THREE.CylinderGeometry(1, 1, 1, 28, 1, true),
+      occMat
+    );
+    this.occluder.renderOrder = 0;
+    this.occluder.visible = false;
+    this.scene.add(this.occluder);
+
     // Contenedor del modelo del anillo (pivote controlado por nosotros).
     this.ringPivot = new THREE.Group();
+    this.ringPivot.renderOrder = 1;
     this.ringPivot.visible = false;
     this.scene.add(this.ringPivot);
 
@@ -282,6 +304,7 @@ export class HandAR {
 
     if (!hasHand) {
       this.ringPivot.visible = false;
+      this.occluder.visible = false;
       if (typeof this.onHand === "function") this.onHand(false);
       return;
     }
@@ -317,7 +340,12 @@ export class HandAR {
       (fingerWidthPx / (this._modelHalfSize * 2)) * (this.arConfig.scale || 1);
 
     // --- ORIENTACIÓN (3D, desde world landmarks si están disponibles) ---
-    const quat = this._computeOrientation(wl || lm, joints, !wl);
+    // Base del dedo (para el oclusor) + corrección por-modelo (para el anillo).
+    const baseQuat = this._computeOrientation(wl || lm, joints, !wl);
+    const quat = baseQuat.clone();
+    if (this._modelRotOffset) {
+      quat.multiply(new THREE.Quaternion().setFromEuler(this._modelRotOffset));
+    }
 
     // Offset fino en unidades de ancho de dedo (x lateral, y a lo largo, z prof.)
     const [ox, oy] = this.arConfig.offset;
@@ -333,17 +361,32 @@ export class HandAR {
       s.pos.copy(targetPos);
       s.scale = targetScale;
       s.quat.copy(quat);
+      s.baseQuat.copy(baseQuat);
+      s.fingerR = fingerWidthPx / 2;
       s.init = true;
     } else {
       s.pos.lerp(targetPos, 0.35);
       s.scale = lerp(s.scale, targetScale, 0.35);
       s.quat.slerp(quat, 0.35);
+      s.baseQuat.slerp(baseQuat, 0.35);
+      s.fingerR = lerp(s.fingerR, fingerWidthPx / 2, 0.35);
     }
 
     this.ringPivot.position.copy(s.pos);
     this.ringPivot.scale.setScalar(s.scale);
     this.ringPivot.quaternion.copy(s.quat);
     this.ringPivot.visible = true;
+
+    // Oclusor de dedo: cilindro alineado al dedo, un poco más fino que el aro,
+    // y largo para cubrir la falange. Oculta la parte del anillo que queda por
+    // detrás del dedo.
+    // Radio del oclusor: algo menor que el aro para que quede dentro del
+    // agujero del anillo (el dedo llena el aro) y no asome por delante.
+    const rFinger = s.fingerR * 0.72;
+    this.occluder.position.copy(s.pos);
+    this.occluder.quaternion.copy(s.baseQuat);
+    this.occluder.scale.set(rFinger, s.fingerR * 5.2, rFinger);
+    this.occluder.visible = true;
 
     if (typeof this.onHand === "function") this.onHand(true);
   }
@@ -392,13 +435,9 @@ export class HandAR {
     zAxis = new THREE.Vector3().crossVectors(xAxis, yAxis).normalize();
 
     const m = new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis);
-    const q = new THREE.Quaternion().setFromRotationMatrix(m);
-
-    // Corrección por-modelo.
-    if (this._modelRotOffset) {
-      q.multiply(new THREE.Quaternion().setFromEuler(this._modelRotOffset));
-    }
-    return q;
+    // Cuaternión de la BASE del dedo (sin corrección por-modelo). El oclusor lo
+    // usa tal cual; el anillo le suma la corrección de orientación del .glb.
+    return new THREE.Quaternion().setFromRotationMatrix(m);
   }
 
   /*

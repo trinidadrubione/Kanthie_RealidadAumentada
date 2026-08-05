@@ -63,7 +63,34 @@
       <section class="config-pane">
         <div class="field">
           <p class="field-title">01 — Modelo</p>
-          <div id="product-list" class="product-list"></div>
+          <div id="model-select" class="model-select">
+            <button
+              type="button"
+              id="model-trigger"
+              class="model-trigger"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <model-viewer
+                id="model-trigger-thumb"
+                class="model-thumb"
+                camera-orbit="0deg 12deg 105%"
+                disable-zoom
+                disable-tap
+                interaction-prompt="none"
+                environment-image="neutral"
+                exposure="1.05"
+                loading="eager"
+                alt=""
+              ></model-viewer>
+              <span class="model-trigger-text">
+                <span id="model-trigger-name" class="model-trigger-name"></span>
+                <span id="model-trigger-desc" class="model-trigger-desc"></span>
+              </span>
+              <span class="model-caret" aria-hidden="true">▾</span>
+            </button>
+            <ul id="model-panel" class="model-panel" role="listbox" hidden></ul>
+          </div>
         </div>
 
         <hr class="rule" />
@@ -88,6 +115,52 @@
           <div>
             <p class="field-title">05 — Posición</p>
             <div id="placement-buttons" class="chips"></div>
+          </div>
+        </div>
+
+        <button type="button" id="guide-toggle" class="guide-toggle">
+          ¿Cuál es cada dedo? Ver guía
+        </button>
+        <div id="guide" class="guide hidden">
+          <svg viewBox="0 0 210 210" role="img" aria-label="Guía de dedos y posiciones del anillo" class="guide-svg">
+            <!-- Palma -->
+            <path d="M70 205 L70 120 Q70 104 86 104 L168 104 Q184 104 184 120 L184 205 Z"
+                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+            <!-- Dedos: índice(2), mayor(3), anular(4), meñique(5) -->
+            <rect x="74"  y="44" width="18" height="62" rx="9" fill="none" stroke="currentColor" stroke-width="2.5" />
+            <rect x="100" y="24" width="18" height="82" rx="9" fill="none" stroke="currentColor" stroke-width="2.5" />
+            <rect x="126" y="18" width="18" height="88" rx="9" fill="none" stroke="currentColor" stroke-width="2.5" />
+            <rect x="152" y="34" width="18" height="72" rx="9" fill="none" stroke="currentColor" stroke-width="2.5" />
+            <!-- Pulgar (1) -->
+            <path d="M70 132 Q48 130 40 150 Q35 163 48 170 L68 160"
+                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+            <!-- Marcas de posición sobre el ANULAR (x 126–144) -->
+            <line x1="124" y1="92"  x2="146" y2="92"  stroke="#1f9d63" stroke-width="4" stroke-linecap="round" />
+            <line x1="124" y1="58"  x2="146" y2="58"  stroke="#b07d1a" stroke-width="4" stroke-linecap="round" />
+            <!-- Números de dedo -->
+            <circle cx="49"  cy="150" r="9" class="g-num-bg" />
+            <text x="49"  y="153" class="g-num">1</text>
+            <circle cx="83"  cy="52"  r="9" class="g-num-bg" />
+            <text x="83"  y="55"  class="g-num">2</text>
+            <circle cx="109" cy="32"  r="9" class="g-num-bg" />
+            <text x="109" y="35"  class="g-num">3</text>
+            <circle cx="135" cy="26"  r="9" class="g-num-bg" />
+            <text x="135" y="29"  class="g-num">4</text>
+            <circle cx="161" cy="42"  r="9" class="g-num-bg" />
+            <text x="161" y="45"  class="g-num">5</text>
+          </svg>
+          <div class="guide-text">
+            <ul class="guide-legend guide-fingers">
+              <li><b>1</b> Pulgar</li>
+              <li><b>2</b> Índice</li>
+              <li><b>3</b> Mayor</li>
+              <li><b>4</b> Anular</li>
+              <li><b>5</b> Meñique</li>
+            </ul>
+            <ul class="guide-legend">
+              <li><span class="g-dot" style="background:#1f9d63"></span> <b>Anillo</b> — en la base del dedo (uso normal).</li>
+              <li><span class="g-dot" style="background:#b07d1a"></span> <b>Midi</b> — sobre la falange media, entre nudillos.</li>
+            </ul>
           </div>
         </div>
 
@@ -120,6 +193,7 @@
 
     <footer class="site-footer">
       <span>Kanthié</span>
+      <span class="footer-credit">Desarrollado por Trinidad Rubione</span>
       <span>© <span id="year"></span> · Realidad Aumentada</span>
     </footer>
 
