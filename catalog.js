@@ -74,7 +74,7 @@ export const PRODUCTS = [
       "oro__ruby":        { src: "numa_oro_ruby.glb" },
       "plata__esmeralda": { src: "numa_plata_esmeralda.glb" },
       "plata__ruby":      { src: "numa_plata_ruby.glb" },
-      "blanco__ninguna":  { src: "numa_blanco.glb" },
+      "plata__blanca":    { src: "numa_blanco.glb" }, // plata con piedra blanca
     },
   },
   {

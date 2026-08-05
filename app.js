@@ -29,7 +29,15 @@ const state = {
 
 // Referencias a nodos de la UI.
 const el = {
-  productList: document.getElementById("product-list"),
+  // Selector de modelo (dropdown con miniatura 3D)
+  modelSelect: document.getElementById("model-select"),
+  modelTrigger: document.getElementById("model-trigger"),
+  modelTriggerThumb: document.getElementById("model-trigger-thumb"),
+  modelTriggerName: document.getElementById("model-trigger-name"),
+  modelTriggerDesc: document.getElementById("model-trigger-desc"),
+  modelPanel: document.getElementById("model-panel"),
+  guideToggle: document.getElementById("guide-toggle"),
+  guide: document.getElementById("guide"),
   materialSwatches: document.getElementById("material-swatches"),
   stoneSwatches: document.getElementById("stone-swatches"),
   fingerButtons: document.getElementById("finger-buttons"),
@@ -50,17 +58,82 @@ const el = {
 /* ------------------------------------------------------------------------ */
 /* Construcción de la UI a partir del catálogo                               */
 /* ------------------------------------------------------------------------ */
-function buildProductList() {
-  el.productList.innerHTML = "";
+// Src representativa de un producto para la miniatura (primera variante).
+function repVariantSrc(product) {
+  const first = Object.values(product.variants)[0];
+  return first ? first.src : "";
+}
+
+/*
+ * Menú desplegable de modelos, con miniatura 3D (vista superior) por opción.
+ * Las miniaturas se cargan de forma diferida (IntersectionObserver) para
+ * escalar a 100+ productos: sólo renderiza las que entran en pantalla.
+ */
+let _thumbObserver = null;
+function buildModelDropdown() {
+  el.modelPanel.innerHTML = "";
+
+  _thumbObserver = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          const mv = e.target;
+          if (!mv.getAttribute("src") && mv.dataset.src) {
+            mv.setAttribute("src", mv.dataset.src);
+          }
+          obs.unobserve(mv);
+        }
+      });
+    },
+    { root: el.modelPanel }
+  );
+
   PRODUCTS.forEach((p) => {
-    const card = document.createElement("button");
-    card.className = "product-card";
-    card.dataset.id = p.id;
-    card.innerHTML = `<span class="product-name">${p.name}</span>
-                      <span class="product-desc">${p.description}</span>`;
-    card.addEventListener("click", () => selectProduct(p.id));
-    el.productList.appendChild(card);
+    const li = document.createElement("li");
+    li.className = "model-option";
+    li.dataset.id = p.id;
+    li.setAttribute("role", "option");
+
+    const thumb = document.createElement("model-viewer");
+    thumb.className = "model-thumb";
+    thumb.setAttribute("camera-orbit", "0deg 12deg 105%");
+    thumb.setAttribute("disable-zoom", "");
+    thumb.setAttribute("disable-tap", "");
+    thumb.setAttribute("interaction-prompt", "none");
+    thumb.setAttribute("environment-image", "neutral");
+    thumb.setAttribute("exposure", "1.05");
+    thumb.setAttribute("alt", "");
+    thumb.dataset.src = repVariantSrc(p);
+
+    const text = document.createElement("span");
+    text.className = "model-option-text";
+    text.innerHTML = `<span class="model-option-name">${p.name}</span>
+                      <span class="model-option-desc">${p.description}</span>`;
+
+    li.appendChild(thumb);
+    li.appendChild(text);
+    li.addEventListener("click", () => {
+      selectProduct(p.id);
+      closeModelPanel();
+    });
+    el.modelPanel.appendChild(li);
+    _thumbObserver.observe(thumb);
   });
+}
+
+function openModelPanel() {
+  el.modelPanel.hidden = false;
+  el.modelTrigger.setAttribute("aria-expanded", "true");
+  el.modelSelect.classList.add("open");
+}
+function closeModelPanel() {
+  el.modelPanel.hidden = true;
+  el.modelTrigger.setAttribute("aria-expanded", "false");
+  el.modelSelect.classList.remove("open");
+}
+function toggleModelPanel() {
+  if (el.modelPanel.hidden) openModelPanel();
+  else closeModelPanel();
 }
 
 function buildFingerAndPlacement() {
@@ -120,8 +193,12 @@ function selectProduct(id) {
   state.productId = id;
   const product = getProduct(id);
 
-  [...el.productList.children].forEach((c) =>
-    c.classList.toggle("active", c.dataset.id === id)
+  // Actualiza el trigger del dropdown (miniatura + nombre + descripción).
+  el.modelTriggerName.textContent = product.name;
+  el.modelTriggerDesc.textContent = product.description;
+  el.modelTriggerThumb.setAttribute("src", repVariantSrc(product));
+  [...el.modelPanel.children].forEach((c) =>
+    c.setAttribute("aria-selected", c.dataset.id === id ? "true" : "false")
   );
 
   // Materiales disponibles para este producto.
@@ -297,9 +374,26 @@ function handleARError(err) {
 /* Init                                                                      */
 /* ------------------------------------------------------------------------ */
 function init() {
-  buildProductList();
+  buildModelDropdown();
   buildFingerAndPlacement();
   selectProduct(state.productId);
+
+  // Dropdown de modelo
+  el.modelTrigger.addEventListener("click", toggleModelPanel);
+  document.addEventListener("click", (e) => {
+    if (!el.modelSelect.contains(e.target)) closeModelPanel();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModelPanel();
+  });
+
+  // Guía de dedos / posición
+  el.guideToggle.addEventListener("click", () => {
+    const open = el.guide.classList.toggle("hidden") === false;
+    el.guideToggle.textContent = open
+      ? "Ocultar guía"
+      : "¿Cuál es cada dedo? Ver guía";
+  });
 
   el.tryBtn.addEventListener("click", openAR);
   el.arClose.addEventListener("click", closeAR);
