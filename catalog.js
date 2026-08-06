@@ -45,10 +45,15 @@ export const STONES = {
  * Pensados como punto de partida razonable; se afinan por modelo con cámara real.
  */
 export const DEFAULT_AR = {
-  scale: 1,
+  // scale 1.4: el aro se escala respecto del ancho del dedo, pero medimos su
+  // diámetro EXTERIOR; con ~1.4 el agujero interno queda del ancho del dedo
+  // (el dedo llena el aro) y el anillo se ve puesto.
+  scale: 1.4,
   rotation: [0, 0, 0],
   offset: [0, 0, 0],
-  holeAxis: "y",
+  // holeAxis 'z': verificado por render — estos .glb tienen el agujero del
+  // anillo sobre el eje Z (la piedra apunta a +Y).
+  holeAxis: "z",
 };
 
 /*
@@ -68,7 +73,7 @@ export const PRODUCTS = [
     name: "Numa",
     type: "ring",
     description: "Anillo Numa — línea clásica con engarce central.",
-    ar: { scale: 1, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "y" },
+    ar: { scale: 1.4, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
     variants: {
       "oro__esmeralda":   { src: "numa_oro_esmeralda.glb" },
       "oro__ruby":        { src: "numa_oro_ruby.glb" },
@@ -82,7 +87,7 @@ export const PRODUCTS = [
     name: "Roz",
     type: "ring",
     description: "Anillo Roz — silueta moderna con piedra destacada.",
-    ar: { scale: 1, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "y" },
+    ar: { scale: 1.35, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
     variants: {
       "oro__esmeralda":   { src: "roz_oro_esmeralda.glb" },
       "plata__esmeralda": { src: "roz_plata_esmeralda.glb" },
@@ -94,7 +99,7 @@ export const PRODUCTS = [
     name: "Rosa",
     type: "ring",
     description: "Anillo Rosa — diseño floral con acento de color.",
-    ar: { scale: 1, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "y" },
+    ar: { scale: 1.35, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
     variants: {
       "oro__esmeralda": { src: "roa_eo.glb" },
       "oro__ruby":      { src: "rosa_ruy.glb" },

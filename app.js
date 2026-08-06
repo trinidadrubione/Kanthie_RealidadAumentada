@@ -32,7 +32,7 @@ const el = {
   // Selector de modelo (dropdown con miniatura 3D)
   modelSelect: document.getElementById("model-select"),
   modelTrigger: document.getElementById("model-trigger"),
-  modelTriggerThumb: document.getElementById("model-trigger-thumb"),
+  modelTriggerMono: document.getElementById("model-trigger-mono"),
   modelTriggerName: document.getElementById("model-trigger-name"),
   modelTriggerDesc: document.getElementById("model-trigger-desc"),
   modelPanel: document.getElementById("model-panel"),
@@ -58,66 +58,35 @@ const el = {
 /* ------------------------------------------------------------------------ */
 /* Construcción de la UI a partir del catálogo                               */
 /* ------------------------------------------------------------------------ */
-// Src representativa de un producto para la miniatura (primera variante).
-function repVariantSrc(product) {
-  const first = Object.values(product.variants)[0];
-  return first ? first.src : "";
-}
-
 /*
- * Menú desplegable de modelos, con miniatura 3D (vista superior) por opción.
- * Las miniaturas se cargan de forma diferida (IntersectionObserver) para
- * escalar a 100+ productos: sólo renderiza las que entran en pantalla.
+ * Menú desplegable de modelos.
+ *
+ * IMPORTANTE: cada opción se representa con un monograma (inicial) en vez de
+ * una miniatura 3D en vivo. Un <model-viewer> por opción crearía muchos
+ * contextos WebGL a la vez y los celulares los limitan: pasarse del límite hace
+ * que los modelos dejen de cargar. Con un solo <model-viewer> (el preview
+ * principal) el widget funciona de forma confiable en todos los dispositivos.
+ * La vista previa 3D del modelo elegido se ve en el panel de la derecha.
  */
-let _thumbObserver = null;
 function buildModelDropdown() {
   el.modelPanel.innerHTML = "";
-
-  _thumbObserver = new IntersectionObserver(
-    (entries, obs) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const mv = e.target;
-          if (!mv.getAttribute("src") && mv.dataset.src) {
-            mv.setAttribute("src", mv.dataset.src);
-          }
-          obs.unobserve(mv);
-        }
-      });
-    },
-    { root: el.modelPanel }
-  );
 
   PRODUCTS.forEach((p) => {
     const li = document.createElement("li");
     li.className = "model-option";
     li.dataset.id = p.id;
     li.setAttribute("role", "option");
-
-    const thumb = document.createElement("model-viewer");
-    thumb.className = "model-thumb";
-    thumb.setAttribute("camera-orbit", "0deg 12deg 105%");
-    thumb.setAttribute("disable-zoom", "");
-    thumb.setAttribute("disable-tap", "");
-    thumb.setAttribute("interaction-prompt", "none");
-    thumb.setAttribute("environment-image", "neutral");
-    thumb.setAttribute("exposure", "1.05");
-    thumb.setAttribute("alt", "");
-    thumb.dataset.src = repVariantSrc(p);
-
-    const text = document.createElement("span");
-    text.className = "model-option-text";
-    text.innerHTML = `<span class="model-option-name">${p.name}</span>
-                      <span class="model-option-desc">${p.description}</span>`;
-
-    li.appendChild(thumb);
-    li.appendChild(text);
+    li.innerHTML = `
+      <span class="model-mono" aria-hidden="true">${p.name.charAt(0)}</span>
+      <span class="model-option-text">
+        <span class="model-option-name">${p.name}</span>
+        <span class="model-option-desc">${p.description}</span>
+      </span>`;
     li.addEventListener("click", () => {
       selectProduct(p.id);
       closeModelPanel();
     });
     el.modelPanel.appendChild(li);
-    _thumbObserver.observe(thumb);
   });
 }
 
@@ -193,10 +162,10 @@ function selectProduct(id) {
   state.productId = id;
   const product = getProduct(id);
 
-  // Actualiza el trigger del dropdown (miniatura + nombre + descripción).
+  // Actualiza el trigger del dropdown (monograma + nombre + descripción).
   el.modelTriggerName.textContent = product.name;
   el.modelTriggerDesc.textContent = product.description;
-  el.modelTriggerThumb.setAttribute("src", repVariantSrc(product));
+  el.modelTriggerMono.textContent = product.name.charAt(0);
   [...el.modelPanel.children].forEach((c) =>
     c.setAttribute("aria-selected", c.dataset.id === id ? "true" : "false")
   );
