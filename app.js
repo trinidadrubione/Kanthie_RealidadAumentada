@@ -32,7 +32,7 @@ const el = {
   // Selector de modelo (dropdown con miniatura 3D)
   modelSelect: document.getElementById("model-select"),
   modelTrigger: document.getElementById("model-trigger"),
-  modelTriggerMono: document.getElementById("model-trigger-mono"),
+  modelTriggerThumb: document.getElementById("model-trigger-thumb"),
   modelTriggerName: document.getElementById("model-trigger-name"),
   modelTriggerDesc: document.getElementById("model-trigger-desc"),
   modelPanel: document.getElementById("model-panel"),
@@ -59,14 +59,14 @@ const el = {
 /* Construcción de la UI a partir del catálogo                               */
 /* ------------------------------------------------------------------------ */
 /*
- * Menú desplegable de modelos.
+ * Menú desplegable de modelos, con miniatura por opción.
  *
- * IMPORTANTE: cada opción se representa con un monograma (inicial) en vez de
- * una miniatura 3D en vivo. Un <model-viewer> por opción crearía muchos
- * contextos WebGL a la vez y los celulares los limitan: pasarse del límite hace
- * que los modelos dejen de cargar. Con un solo <model-viewer> (el preview
- * principal) el widget funciona de forma confiable en todos los dispositivos.
- * La vista previa 3D del modelo elegido se ve en el panel de la derecha.
+ * IMPORTANTE: las miniaturas son IMÁGENES estáticas pre-renderizadas
+ * (thumbs/*.png), no visores 3D en vivo. Un <model-viewer> por opción crearía
+ * muchos contextos WebGL a la vez y los celulares los limitan: pasarse del
+ * límite hace que los modelos dejen de cargar. Con imágenes no se usa WebGL,
+ * así que escala a 100+ productos sin riesgo. La vista 3D real (girable) del
+ * modelo elegido se ve en el panel principal.
  */
 function buildModelDropdown() {
   el.modelPanel.innerHTML = "";
@@ -77,7 +77,7 @@ function buildModelDropdown() {
     li.dataset.id = p.id;
     li.setAttribute("role", "option");
     li.innerHTML = `
-      <span class="model-mono" aria-hidden="true">${p.name.charAt(0)}</span>
+      <img class="model-thumb-img" alt="" loading="lazy" src="${p.thumb || ""}" />
       <span class="model-option-text">
         <span class="model-option-name">${p.name}</span>
         <span class="model-option-desc">${p.description}</span>
@@ -162,10 +162,10 @@ function selectProduct(id) {
   state.productId = id;
   const product = getProduct(id);
 
-  // Actualiza el trigger del dropdown (monograma + nombre + descripción).
+  // Actualiza el trigger del dropdown (miniatura + nombre + descripción).
   el.modelTriggerName.textContent = product.name;
   el.modelTriggerDesc.textContent = product.description;
-  el.modelTriggerMono.textContent = product.name.charAt(0);
+  if (product.thumb) el.modelTriggerThumb.src = product.thumb;
   [...el.modelPanel.children].forEach((c) =>
     c.setAttribute("aria-selected", c.dataset.id === id ? "true" : "false")
   );
