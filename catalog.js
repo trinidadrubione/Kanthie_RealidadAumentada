@@ -73,7 +73,8 @@ export const PRODUCTS = [
     name: "Numa",
     type: "ring",
     description: "Anillo Numa — línea clásica con engarce central.",
-    ar: { scale: 1.4, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
+    thumb: "thumbs/numa.png",
+    ar: { scale: 1.55, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
     variants: {
       "oro__esmeralda":   { src: "numa_oro_esmeralda.glb" },
       "oro__ruby":        { src: "numa_oro_ruby.glb" },
@@ -83,26 +84,19 @@ export const PRODUCTS = [
     },
   },
   {
+    // Roz y Rosa son el MISMO modelo: se unifican en un solo producto.
+    // (roa_eo.glb queda sin usar por ser un duplicado de oro + esmeralda.)
     id: "roz",
     name: "Roz",
     type: "ring",
-    description: "Anillo Roz — silueta moderna con piedra destacada.",
-    ar: { scale: 1.35, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
+    description: "Anillo Roz — diseño floral con piedra destacada.",
+    thumb: "thumbs/roz.png",
+    ar: { scale: 1.5, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
     variants: {
       "oro__esmeralda":   { src: "roz_oro_esmeralda.glb" },
+      "oro__ruby":        { src: "rosa_ruy.glb" },
       "plata__esmeralda": { src: "roz_plata_esmeralda.glb" },
       "plata__ruby":      { src: "roz_plata_ruy.glb" },
-    },
-  },
-  {
-    id: "rosa",
-    name: "Rosa",
-    type: "ring",
-    description: "Anillo Rosa — diseño floral con acento de color.",
-    ar: { scale: 1.35, rotation: [0, 0, 0], offset: [0, 0, 0], holeAxis: "z" },
-    variants: {
-      "oro__esmeralda": { src: "roa_eo.glb" },
-      "oro__ruby":      { src: "rosa_ruy.glb" },
     },
   },
 ];
