@@ -11,9 +11,9 @@
  *      superpuesto sobre el video.
  *
  * Se usa una cámara ortográfica en espacio de píxeles (Y hacia arriba): la
- * posición, la escala y la orientación del anillo se calculan a partir de los
- * puntos 2D de la mano en la pantalla, en un único espacio coherente. Esto
- * evita desajustes de orientación y hace el resultado estable y reproducible.
+ * posición y la escala se calculan con los puntos 2D de la mano, y la
+ * orientación es 3D (usa la profundidad de los landmarks) para que el anillo se
+ * incline con el dedo. Todo en un único espacio coherente.
  *
  * Los materiales metálicos (oro/plata) se iluminan con un mapa de entorno
  * (RoomEnvironment); sin él, el PBR metálico se vería negro.
@@ -35,6 +35,13 @@ const WASM_ROOT =
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const HAND_MODEL =
   "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+// Landmarks de referencia de la palma (para calcular el "dorso" de la mano).
+const WRIST = 0, INDEX_MCP = 5, PINKY_MCP = 17;
+
+// Cuánto influye la profundidad (z de MediaPipe) en la inclinación 3D del
+// anillo. 1 = tal cual; valores menores suavizan la inclinación.
+const DEPTH_SCALE = 0.9;
 
 // Índices de landmarks de MediaPipe por dedo (MCP = nudillo, PIP = falange
 // media, DIP = falange distal, TIP = punta).
@@ -96,7 +103,7 @@ export class HandAR {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.45; // más brillo para que el metal se vea claro
+    this.renderer.toneMappingExposure = 1.55; // más brillo para que el metal se vea claro
 
     this.scene = new THREE.Scene();
 
@@ -110,12 +117,15 @@ export class HandAR {
     // three, cross-products correctos). Se dimensiona en _resize().
     this.camera = new THREE.OrthographicCamera(0, 1, 1, 0, -2000, 2000);
 
-    // Luz de apoyo suave (el grueso de la iluminación viene del entorno).
+    // Luz de apoyo suave + un realce especular para que el metal "brille".
     const hemi = new THREE.HemisphereLight(0xffffff, 0x555555, 0.5);
     this.scene.add(hemi);
-    const key = new THREE.DirectionalLight(0xffffff, 0.8);
+    const key = new THREE.DirectionalLight(0xffffff, 1.1);
     key.position.set(1, 2, 3);
     this.scene.add(key);
+    const spark = new THREE.DirectionalLight(0xfff6e8, 0.7);
+    spark.position.set(-1.5, 1, 2);
+    this.scene.add(spark);
 
     // Oclusor de dedo: un cilindro invisible que SOLO escribe profundidad (no
     // color). Al ubicarlo sobre el dedo, "tapa" la mitad trasera del anillo,
@@ -319,6 +329,7 @@ export class HandAR {
 
     // Elegimos la primera mano detectada.
     const lm = results.landmarks[0]; // normalizados [0..1] (imagen)
+    this._lm = lm;
     const joints = FINGER_JOINTS[this.finger];
 
     // --- POSICIÓN (en píxeles de pantalla) ---
@@ -346,10 +357,10 @@ export class HandAR {
     const targetScale =
       (fingerWidthPx / (this._modelHalfSize * 2)) * (this.arConfig.scale || 1);
 
-    // --- ORIENTACIÓN (desde los puntos 2D del dedo, en el mismo espacio que la
-    // posición) --- El eje del agujero se alinea con la dirección del dedo en la
-    // pantalla y la banda mira a la cámara. Reproducible y estable.
-    const baseQuat = this._orient2D(pa, pb);
+    // --- ORIENTACIÓN 3D (desde los puntos de la mano, con profundidad) ---
+    // El eje del agujero sigue la dirección del dedo y el engarce apunta según
+    // el dorso de la mano, así el anillo se INCLINA en 3D con el dedo (realista).
+    const baseQuat = this._computeBasis3D(joints, this.placement);
     const quat = baseQuat.clone();
     if (this._modelRotOffset) {
       quat.multiply(new THREE.Quaternion().setFromEuler(this._modelRotOffset));
@@ -401,32 +412,60 @@ export class HandAR {
   }
 
   /*
-   * Orientación del anillo a partir de dos puntos 2D del dedo (en píxeles de
-   * pantalla, medidos desde arriba). Construimos una base ortonormal en el
-   * espacio de la cámara (Y arriba):
-   *   - yAxis: dirección del dedo en la pantalla = eje del agujero del anillo.
-   *   - zAxis: hacia la cámara (la banda mira al espectador).
+   * Orientación 3D del anillo. Construye una base ortonormal en el espacio de la
+   * cámara (píxeles, Y arriba, Z hacia el espectador), usando la profundidad de
+   * los landmarks para inclinar el anillo con el dedo:
+   *   - yAxis: dirección 3D del dedo = eje del agujero del anillo.
+   *   - zAxis: normal del dorso de la mano = hacia dónde apunta el engarce.
    *   - xAxis: perpendicular a ambas.
-   * Devuelve el cuaternión de la BASE del dedo (sin corrección por-modelo); el
-   * oclusor lo usa tal cual y el anillo le suma la corrección del .glb.
+   * Devuelve el cuaternión de la BASE (sin corrección por-modelo); el oclusor lo
+   * usa tal cual y el anillo le suma la corrección del .glb.
    */
-  _orient2D(pa, pb) {
-    const h = this._cssH;
-    // A píxeles con Y hacia arriba (coherente con la cámara ortográfica).
-    const a = new THREE.Vector3(pa.x, h - pa.y, 0);
-    const b = new THREE.Vector3(pb.x, h - pb.y, 0);
+  _computeBasis3D(joints, placement) {
+    const P = (i) => this._toScreen3D(this._lm[i]);
+    const a = placement === "midi" ? P(joints.pip) : P(joints.mcp);
+    const b = placement === "midi" ? P(joints.dip) : P(joints.pip);
 
     let yAxis = b.clone().sub(a);
-    if (yAxis.lengthSq() < 1e-6) yAxis.set(0, 1, 0);
+    if (yAxis.lengthSq() < 1e-9) yAxis.set(0, 1, 0);
     yAxis.normalize();
 
-    const zAxis0 = new THREE.Vector3(0, 0, 1); // hacia la cámara
-    let xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis0).normalize();
-    if (xAxis.lengthSq() < 1e-6) xAxis.set(1, 0, 0);
-    const zAxis = new THREE.Vector3().crossVectors(xAxis, yAxis).normalize();
+    // Normal del dorso de la mano (hacia dónde apunta el engarce).
+    const wrist = P(WRIST), idx = P(INDEX_MCP), pky = P(PINKY_MCP);
+    let up = new THREE.Vector3().crossVectors(
+      idx.clone().sub(wrist),
+      pky.clone().sub(wrist)
+    );
+    if (this._mirrored) up.multiplyScalar(-1); // el espejo invierte el sentido
+    if (up.lengthSq() < 1e-9) up.set(0, 0, 1);
+    up.normalize();
+    if (up.z < 0) up.multiplyScalar(-1); // que mire hacia la cámara
+
+    // zAxis = componente de 'up' perpendicular al eje del dedo.
+    let zAxis = up.clone().addScaledVector(yAxis, -up.dot(yAxis));
+    if (zAxis.lengthSq() < 1e-9) zAxis.set(0, 0, 1);
+    zAxis.normalize();
+    let xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis).normalize();
+    if (xAxis.lengthSq() < 1e-9) xAxis.set(1, 0, 0);
+    zAxis = new THREE.Vector3().crossVectors(xAxis, yAxis).normalize();
 
     const m = new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis);
     return new THREE.Quaternion().setFromRotationMatrix(m);
+  }
+
+  /*
+   * Punto 3D de un landmark en espacio de pantalla (píxeles, Y arriba, Z hacia
+   * el espectador). Usa _toScreen para (x,y) y la profundidad z de MediaPipe.
+   */
+  _toScreen3D(p) {
+    const s = this._toScreen(p);
+    const vw = this.video.videoWidth || 1280;
+    const vh = this.video.videoHeight || 720;
+    const scale = Math.max(this._cssW / vw, this._cssH / vh);
+    const dw = vw * scale; // píxeles por unidad normalizada en x
+    // z menor = más cerca de la cámara = +Z hacia el espectador.
+    const zc = -(p.z || 0) * dw * DEPTH_SCALE;
+    return new THREE.Vector3(s.x, this._cssH - s.y, zc);
   }
 
   /*
